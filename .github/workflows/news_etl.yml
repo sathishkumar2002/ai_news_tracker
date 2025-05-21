@@ -1,0 +1,35 @@
+name: Run ETL every 6 hours
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run ETL script
+      env:
+        GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
+      run: python etl.py
+
+    - name: Commit and push updated CSV
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add data/news_data.csv
+        git commit -m "⏱️ Update news data"
+        git push

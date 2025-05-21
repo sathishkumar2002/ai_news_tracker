@@ -22,12 +22,14 @@ def fetch_ai_news():
     news_data = []
     for article in articles:
         news_data.append({
-            "title": article["title"],
-            "source": article["source"]["name"],
-            "publishedAt": article["publishedAt"],
-            "url": article["url"],
-            "image": article.get("image", None)
+            "title": article.get("title"),
+            "description": article.get("description"), 
+            "url": article.get("url"),
+            "publishedAt": article.get("publishedAt"),
+            "source": article.get("source", {}).get("name"),
+            "image": article.get("urlToImage"),
         })
+
     return news_data
 
 def save_to_csv(news_data):
