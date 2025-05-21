@@ -3,7 +3,7 @@ name: Run ETL every 6 hours
 on:
   schedule:
     - cron: '0 */6 * * *'  # Every 6 hours
-  workflow_dispatch:
+  workflow_dispatch:       # Allows manual trigger
 
 jobs:
   run-etl:
@@ -27,13 +27,16 @@ jobs:
       run: python etl.py
 
     - name: Commit and push updated CSV
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
+        git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
         git add data/news_data.csv
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
           git commit -m "🔄 Auto update news data"
-          git push
+          git push origin HEAD:main
         fi
