@@ -74,7 +74,7 @@ if __name__ == "__main__":
             print(f"🔍 Fetching for: {term}")
             news = fetch_news_for_term(term)
             all_news.extend(news)
-            time.sleep(1)  # To respect API rate limits
+            time.sleep(3)  # To respect API rate limits
 
         save_to_csv(all_news)
 
