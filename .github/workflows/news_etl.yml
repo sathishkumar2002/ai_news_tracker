@@ -26,6 +26,15 @@ jobs:
         GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
       run: python etl.py
 
+    # Optional debugging steps - remove or comment out after confirming token & remote URL
+    - name: Debug: Show remote URLs
+      run: git remote -v
+
+    - name: Debug: Check token length
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+      run: echo "Token length: ${#GITHUB_TOKEN}"
+
     - name: Commit and push updated CSV
       env:
         GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
