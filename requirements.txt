@@ -1,5 +1,6 @@
+rapidfuzz
 streamlit
 requests
 python-dotenv
 pandas
-rapidfuzz
+
