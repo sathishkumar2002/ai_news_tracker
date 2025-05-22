@@ -2,7 +2,8 @@ name: Run ETL every 6 hours
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
+   # - cron: '0 */6 * * *'  # Every 6 hours
   workflow_dispatch:       # Allows manual trigger
 
 jobs:
