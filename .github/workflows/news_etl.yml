@@ -1,8 +1,8 @@
-name: Run ETL every 6 hours
+name: Run ETL every 2 minutes
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '*/6 * * * *'  # Runs every 2 minutes
   workflow_dispatch:       # Allows manual trigger
 
 jobs:
@@ -26,17 +26,40 @@ jobs:
         GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
       run: python etl.py
 
+    - name: Debug - Check token length
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+      run: |
+        echo "Token length: ${#GITHUB_TOKEN}"  # Should return a non-zero length
+      shell: bash
+
+    - name: Debug - Show first 4 chars of token
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+      run: |
+        echo "Token starts with: ${GITHUB_TOKEN::4}"  # Should print first 4 characters
+      shell: bash
+
+    - name: Debug - Set remote URL for GitHub
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+      run: |
+        git remote set-url origin https://${{ secrets.PUSH_PAT }}@github.com/${{ github.repository }}
+        git remote -v  # Verify the remote URL
+      shell: bash
+
     - name: Commit and push updated CSV
       env:
         GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
-        git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
         git add data/news_data.csv
+
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
           git commit -m "🔄 Auto update news data"
           git push origin HEAD:main
         fi
+      shell: bash
