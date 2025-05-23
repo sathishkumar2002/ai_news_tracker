@@ -64,6 +64,15 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
       run: |
+        echo "🔍 Checking PUSH_PAT env"
+        echo "Token length: ${#PUSH_PAT}"
+        echo "Token preview: ${PUSH_PAT:0:4}..."
+
+        if [ -z "$PUSH_PAT" ]; then
+        echo "❌ PUSH_PAT is not set. Exiting."
+        exit 1
+        fi
+
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
@@ -73,7 +82,7 @@ jobs:
 
         git add data/news_data.csv
         if git diff --cached --quiet; then
-        echo "No changes to commit"
+        echo "✅ No changes to commit"
         else
         git commit -m "🔄 Auto update news data"
         git push origin HEAD:main
