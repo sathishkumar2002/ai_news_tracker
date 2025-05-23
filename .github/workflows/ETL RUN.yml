@@ -65,10 +65,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
       run: |
         echo "🔍 Checking PUSH_PAT env"
-        echo "Token length: ${#PUSH_PAT}"
-        echo "Token preview: ${PUSH_PAT:0:4}..."
+        echo "Token length: ${#GITHUB_TOKEN}"
+        echo "Token preview: ${GITHUB_TOKEN:0:4}..."
 
-        if [ -z "$PUSH_PAT" ]; then
+        if [ -z "$GITHUB_TOKEN" ]; then
         echo "❌ PUSH_PAT is not set. Exiting."
         exit 1
         fi
@@ -77,7 +77,7 @@ jobs:
         git config --global user.email "actions@github.com"
 
         echo "🔐 Setting remote URL with PAT"
-        git remote set-url origin https://${PUSH_PAT}@github.com/${{ github.repository }}
+        git remote set-url origin https://${GITHUB_TOKEN}@github.com/${{ github.repository }}
         git remote -v
 
         git add data/news_data.csv
