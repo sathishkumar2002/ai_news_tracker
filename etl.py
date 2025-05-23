@@ -11,8 +11,7 @@ API_KEY = os.getenv("GNEWS_API_KEY")
 CSV_PATH = "data/news_data.csv"
 
 SEARCH_TERMS = [
-    "AI"
-    #, "artificial intelligence", "machine learning","deep learning", "neural networks", "generative AI","LLM", "chatbot"
+    "AI", "artificial intelligence", "machine learning","deep learning", "neural networks", "generative AI","LLM", "chatbot"
 ]
 
 def fetch_news_for_term(term):

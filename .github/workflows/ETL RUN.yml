@@ -11,7 +11,15 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for proper git diff checks
+
+    - name: Debug - Show repository info
+      run: |
+        echo "Repository: ${{ github.repository }}"
+        echo "Workflow triggered by: ${{ github.actor }}"
+        echo "Branch: ${{ github.ref }}"
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -21,82 +29,62 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
 
-    - name: Ensure data directory and CSV file exist
+    - name: Ensure data directory exists
       run: |
         mkdir -p data
-        touch data/news_data.csv
-        if [ ! -s data/news_data.csv ]; then
+        if [ ! -f data/news_data.csv ]; then
           echo "title,description,url,publishedAt,source,image" > data/news_data.csv
         fi
-      shell: bash
+        ls -la data/  # Debug: Show directory contents
 
     - name: Run ETL script
       env:
         GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
       run: python etl.py
 
-    - name: Debug - Check token length
-      env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
-      run: |
-        echo "Token length: ${#PUSH_PAT}"
-      shell: bash
-
-    - name: Debug - Show first 4 chars of token
-      env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
-      run: |
-        echo "Token starts with: ${PUSH_PAT::4}"
-      shell: bash
-
-    - name: Debug - Show Git Diff
+    - name: Debug - Show file changes
       run: |
         git status
-        git diff
-        git diff --cached || true
-      shell: bash
+        git diff --stat
+        echo "CSV file size: $(du -h data/news_data.csv)"
 
-
-
-
-
-    - name: Commit and push updated CSV
+    - name: Debug - Verify token availability
       env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT || secrets.GITHUB_TOKEN }}
       run: |
-        echo "🔍 Checking PUSH_PAT env"
-        echo "Token length: ${#PUSH_PAT}"
-        echo "Token preview: ${PUSH_PAT:0:4}..."
+        echo "Token preview: ${GITHUB_TOKEN:0:4}..."  # First 4 chars for verification
+        echo "Token length: ${#GITHUB_TOKEN}"
+        # Verify token has repo access
+        curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          https://api.github.com/repos/${{ github.repository }} | jq .permissions
 
-        if [ -z "$PUSH_PAT" ]; then
-        echo "❌ PUSH_PAT is not set. Exiting."
-        exit 1
-        fi
-
+    - name: Commit and push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT || secrets.GITHUB_TOKEN }}
+      run: |
+        # Configure git
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
-        echo "🔐 Setting remote URL with PAT"
-        git remote set-url origin https://${PUSH_PAT}@github.com/${{ github.repository }}
-        git remote -v
+        # Show git config for debugging
+        git config --list
 
+        # Check for changes
         git add data/news_data.csv
+        git status
         if git diff --cached --quiet; then
-        echo "✅ No changes to commit"
-        else
-        git commit -m "🔄 Auto update news data"
-        git push origin HEAD:main
+          echo "✅ No changes to commit"
+          exit 0
         fi
-      shell: bash
 
+        # Commit and push
+        git commit -m "🔄 Auto-update news data [skip ci]"
+        git push origin HEAD:main
+        echo "Push successful!"
 
-    - name: 🔍 Debug - Show Git remote and token type
+    - name: Debug - Final verification
       run: |
-        git remote -v
-        git config --get user.name
-        git config --get user.email
-        echo "Remote URL is: $(git remote get-url origin)"
-        echo "First few characters of token (for debugging): ${PUSH_PAT:0:5}"
-      env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
-      shell: bash
+        echo "Last commit:"
+        git log -n 1 --oneline
+        echo "Remote branches:"
+        git ls-remote --heads origin
