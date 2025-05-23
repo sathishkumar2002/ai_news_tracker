@@ -21,6 +21,15 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
 
+    - name: Ensure data directory and CSV file exist
+      run: |
+        mkdir -p data
+        touch data/news_data.csv
+        if [ ! -s data/news_data.csv ]; then
+          echo "title,description,url,publishedAt,source,image" > data/news_data.csv
+        fi
+      shell: bash
+
     - name: Run ETL script
       env:
         GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
@@ -33,13 +42,19 @@ jobs:
         echo "Token length: ${#GITHUB_TOKEN}"
       shell: bash
 
-    - name: Debug- Show first 4 chars of token
+    - name: Debug - Show first 4 chars of token
       env:
         GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
       run: |
         echo "Token starts with: ${GITHUB_TOKEN::4}"
       shell: bash
 
+    - name: Debug - Show Git Diff
+      run: |
+        git status
+        git diff
+        git diff --cached || true
+      shell: bash
 
     - name: Commit and push updated CSV
       env:
@@ -49,9 +64,11 @@ jobs:
         git config --global user.email "actions@github.com"
         git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
         git add data/news_data.csv
+
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
           git commit -m "🔄 Auto update news data"
           git push origin HEAD:main
         fi
+      shell: bash
