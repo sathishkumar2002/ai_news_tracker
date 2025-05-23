@@ -1,4 +1,4 @@
-name: Run ETL and Auto-Commit
+name: Run ETL every 6 hours
 
 on:
   schedule:
@@ -10,71 +10,81 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 📦 Checkout repository
-      uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for proper git diff checks
 
-    - name: 🐍 Set up Python
+    - name: Debug - Show repository info
+      run: |
+        echo "Repository: ${{ github.repository }}"
+        echo "Workflow triggered by: ${{ github.actor }}"
+        echo "Branch: ${{ github.ref }}"
+
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
-    - name: 📥 Install dependencies
+    - name: Install dependencies
       run: pip install -r requirements.txt
 
-    - name: 🗂️ Ensure data directory and CSV file exist
+    - name: Ensure data directory exists
       run: |
         mkdir -p data
-        touch data/news_data.csv
-        if [ ! -s data/news_data.csv ]; then
+        if [ ! -f data/news_data.csv ]; then
           echo "title,description,url,publishedAt,source,image" > data/news_data.csv
         fi
-      shell: bash
+        ls -la data/  # Debug: Show directory contents
 
-    - name: 🚀 Run ETL script
+    - name: Run ETL script
       env:
         GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
       run: python etl.py
 
-    - name:  Debug- Show Git status and changes
+    - name: Debug - Show file changes
       run: |
         git status
-        git diff
-        git diff --cached || true
-      shell: bash
-    - name: 🚀 Commit and push updated CSV
+        git diff --stat
+        echo "CSV file size: $(du -h data/news_data.csv)"
+
+    - name: Debug - Verify token availability
       env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT || secrets.GITHUB_TOKEN }}
       run: |
-        echo "🔍 Checking PUSH_PAT env"
-        echo "Token length: ${#PUSH_PAT}"
-        echo "Token preview: ${PUSH_PAT:0:4}..."
+        echo "Token preview: ${GITHUB_TOKEN:0:4}..."  # First 4 chars for verification
+        echo "Token length: ${#GITHUB_TOKEN}"
+        # Verify token has repo access
+        curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          https://api.github.com/repos/${{ github.repository }} | jq .permissions
 
-        if [ -z "$PUSH_PAT" ]; then
-          echo "❌ PUSH_PAT is not set. Exiting."
-          exit 1
-        fi
-
+    - name: Commit and push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT || secrets.GITHUB_TOKEN }}
+      run: |
+        # Configure git
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
-        echo "🔐 Setting remote URL with PAT"
-        git remote set-url origin https://$PUSH_PAT@github.com/${{ github.repository }}
-        git remote -v
+        # Show git config for debugging
+        git config --list
 
+        # Check for changes
         git add data/news_data.csv
+        git status
         if git diff --cached --quiet; then
           echo "✅ No changes to commit"
-        else
-          git commit -m "🔄 Auto update news data"
-          git push origin HEAD:main
+          exit 0
         fi
 
-    - name: 🔍 Final Debug Info
+        # Commit and push
+        git commit -m "🔄 Auto-update news data [skip ci]"
+        git push origin HEAD:main
+        echo "Push successful!"
+
+    - name: Debug - Final verification
       run: |
-        git remote -v
-        git config --get user.name
-        git config --get user.email
-        echo "Remote URL is: $(git remote get-url origin)"
-        echo "Token preview: ${PUSH_PAT:0:5}"
-      env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
+        echo "Last commit:"
+        git log -n 1 --oneline
+        echo "Remote branches:"
+        git ls-remote --heads origin
