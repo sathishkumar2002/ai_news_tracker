@@ -37,16 +37,16 @@ jobs:
 
     - name: Debug - Check token length
       env:
-        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+        PUSH_PAT: ${{ secrets.PUSH_PAT }}
       run: |
-        echo "Token length: ${#GITHUB_TOKEN}"
+        echo "Token length: ${#PUSH_PAT}"
       shell: bash
 
     - name: Debug - Show first 4 chars of token
       env:
-        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+        PUSH_PAT: ${{ secrets.PUSH_PAT }}
       run: |
-        echo "Token starts with: ${GITHUB_TOKEN::4}"
+        echo "Token starts with: ${PUSH_PAT::4}"
       shell: bash
 
     - name: Debug - Show Git Diff
@@ -62,13 +62,13 @@ jobs:
 
     - name: Commit and push updated CSV
       env:
-        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+        PUSH_PAT: ${{ secrets.PUSH_PAT }}
       run: |
         echo "🔍 Checking PUSH_PAT env"
-        echo "Token length: ${#GITHUB_TOKEN}"
-        echo "Token preview: ${GITHUB_TOKEN:0:4}..."
+        echo "Token length: ${#PUSH_PAT}"
+        echo "Token preview: ${PUSH_PAT:0:4}..."
 
-        if [ -z "$GITHUB_TOKEN" ]; then
+        if [ -z "$PUSH_PAT" ]; then
         echo "❌ PUSH_PAT is not set. Exiting."
         exit 1
         fi
@@ -77,7 +77,7 @@ jobs:
         git config --global user.email "actions@github.com"
 
         echo "🔐 Setting remote URL with PAT"
-        git remote set-url origin https://${GITHUB_TOKEN}@github.com/${{ github.repository }}
+        git remote set-url origin https://${PUSH_PAT}@github.com/${{ github.repository }}
         git remote -v
 
         git add data/news_data.csv
@@ -96,7 +96,7 @@ jobs:
         git config --get user.name
         git config --get user.email
         echo "Remote URL is: $(git remote get-url origin)"
-        echo "First few characters of token (for debugging): ${GITHUB_TOKEN:0:5}"
+        echo "First few characters of token (for debugging): ${PUSH_PAT:0:5}"
       env:
-        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
+        PUSH_PAT: ${{ secrets.PUSH_PAT }}
       shell: bash
