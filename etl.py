@@ -12,7 +12,7 @@ CSV_PATH = "data/news_data.csv"
 
 SEARCH_TERMS = [
     "AI"
-    #S, "artificial intelligence", "machine learning","deep learning", "neural networks", "generative AI","LLM", "chatbot"
+    #, "artificial intelligence", "machine learning","deep learning", "neural networks", "generative AI","LLM", "chatbot"
 ]
 
 def fetch_news_for_term(term):
