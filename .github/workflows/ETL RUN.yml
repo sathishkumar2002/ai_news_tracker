@@ -1,4 +1,4 @@
-name: Run ETL every 6 hours
+name: Run ETL and Auto-Commit
 
 on:
   schedule:
@@ -10,18 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: 📦 Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Python
+    - name: 🐍 Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
-    - name: Install dependencies
+    - name: 📥 Install dependencies
       run: pip install -r requirements.txt
 
-    - name: Ensure data directory and CSV file exist
+    - name: 🗂️ Ensure data directory and CSV file exist
       run: |
         mkdir -p data
         touch data/news_data.csv
@@ -30,37 +30,18 @@ jobs:
         fi
       shell: bash
 
-    - name: Run ETL script
+    - name: 🚀 Run ETL script
       env:
         GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
       run: python etl.py
 
-    - name: Debug - Check token length
-      env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
-      run: |
-        echo "Token length: ${#PUSH_PAT}"
-      shell: bash
-
-    - name: Debug - Show first 4 chars of token
-      env:
-        PUSH_PAT: ${{ secrets.PUSH_PAT }}
-      run: |
-        echo "Token starts with: ${PUSH_PAT::4}"
-      shell: bash
-
-    - name: Debug - Show Git Diff
+    - name:  Debug- Show Git status and changes
       run: |
         git status
         git diff
         git diff --cached || true
       shell: bash
-
-
-
-
-
-    - name: Commit and push updated CSV
+    - name: 🚀 Commit and push updated CSV
       env:
         PUSH_PAT: ${{ secrets.PUSH_PAT }}
       run: |
@@ -69,34 +50,31 @@ jobs:
         echo "Token preview: ${PUSH_PAT:0:4}..."
 
         if [ -z "$PUSH_PAT" ]; then
-        echo "❌ PUSH_PAT is not set. Exiting."
-        exit 1
+          echo "❌ PUSH_PAT is not set. Exiting."
+          exit 1
         fi
 
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
         echo "🔐 Setting remote URL with PAT"
-        git remote set-url origin https://${PUSH_PAT}@github.com/${{ github.repository }}
+        git remote set-url origin https://$PUSH_PAT@github.com/${{ github.repository }}
         git remote -v
 
         git add data/news_data.csv
         if git diff --cached --quiet; then
-        echo "✅ No changes to commit"
+          echo "✅ No changes to commit"
         else
-        git commit -m "🔄 Auto update news data"
-        git push origin HEAD:main
+          git commit -m "🔄 Auto update news data"
+          git push origin HEAD:main
         fi
-      shell: bash
 
-
-    - name: 🔍 Debug - Show Git remote and token type
+    - name: 🔍 Final Debug Info
       run: |
         git remote -v
         git config --get user.name
         git config --get user.email
         echo "Remote URL is: $(git remote get-url origin)"
-        echo "First few characters of token (for debugging): ${PUSH_PAT:0:5}"
+        echo "Token preview: ${PUSH_PAT:0:5}"
       env:
         PUSH_PAT: ${{ secrets.PUSH_PAT }}
-      shell: bash
