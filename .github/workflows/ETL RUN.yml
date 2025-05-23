@@ -57,16 +57,7 @@ jobs:
       shell: bash
 
 
-    - name: 🔍 Debug - Show Git remote and token type
-      run: |
-        git remote -v
-        git config --get user.name
-        git config --get user.email
-        echo "Remote URL is: $(git remote get-url origin)"
-        echo "First few characters of token (for debugging): ${GITHUB_TOKEN:0:5}"
-      env:
-        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
-      shell: bash
+
 
 
     - name: Commit and push updated CSV
@@ -87,4 +78,16 @@ jobs:
         git commit -m "🔄 Auto update news data"
         git push origin HEAD:main
         fi
+      shell: bash
+
+
+    - name: 🔍 Debug - Show Git remote and token type
+      run: |
+        git remote -v
+        git config --get user.name
+        git config --get user.email
+        echo "Remote URL is: $(git remote get-url origin)"
+        echo "First few characters of token (for debugging): ${GITHUB_TOKEN:0:5}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_PAT }}
       shell: bash
