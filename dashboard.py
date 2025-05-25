@@ -4,16 +4,15 @@ from datetime import datetime
 import pytz
 import webbrowser
 import os
-from pathlib import Path
 
-# Page configuration with updated title to match your image
+# Page configuration
 st.set_page_config(
     page_title="AI NEWS TRACKER | Real-time AI News Dashboard",
     layout="wide",
     page_icon="🧠"
 )
 
-# Global CSS styling - added styles for the title image
+# Global CSS styling
 st.markdown("""
     <style>
         :root {
@@ -34,20 +33,6 @@ st.markdown("""
             --accent: #f39c12;
         }
 
-        .title-image-container {
-            display: flex;
-            justify-content: center;
-            margin: 0 auto 1rem auto;
-            max-width: 800px;
-            width: 100%;
-        }
-        
-        .title-image {
-            max-height: 120px;
-            width: auto;
-        }
-
-        /* Rest of your existing CSS remains unchanged */
         .article-container {
             margin-bottom: 30px;
             padding-bottom: 20px;
@@ -80,7 +65,7 @@ st.markdown("""
             align-items: center;
             gap: 8px;
         }
-            
+
         .sidebar-link {
             display: block;
             padding: 0.5rem 0;
@@ -112,13 +97,9 @@ st.markdown("""
             background: var(--accent);
             color: white;
         }
-
-        div.stImage > div > div > img {
-            display: block;
-            margin: 0 auto;
-        }
     </style>
 """, unsafe_allow_html=True)
+
 
 @st.cache_data
 def load_data():
@@ -129,6 +110,7 @@ def load_data():
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
         return pd.DataFrame()
+
 
 def render_sidebar_extras():
     with st.sidebar:
@@ -175,17 +157,18 @@ def render_sidebar_extras():
                 "</div>", unsafe_allow_html=True
             )
 
-def main():
-    # Header with centered image
-    image_path = "assets/AINEWSTRACKER_IMAGE.png"
 
+def main():
+    # Centered Image Header
+    image_path = "assets/AINEWSTRACKER_IMAGE.png"
     if os.path.exists(image_path):
-        st.image(image_path, width=400)  # Adjust width as needed (try 350–500 range)
-        st.caption("Latest artificial intelligence news")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.image(image_path, width=400)
+            st.caption("Latest artificial intelligence news")
     else:
         st.title("AI NEWS TRACKER")
         st.caption("Latest artificial intelligence news")
-
 
     # Load data
     df = load_data()
@@ -242,6 +225,7 @@ def main():
         st.warning("No news articles found")
 
     render_sidebar_extras()
+
 
 if __name__ == "__main__":
     main()
