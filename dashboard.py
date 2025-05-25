@@ -4,6 +4,7 @@ from datetime import datetime
 import pytz
 import webbrowser
 import os
+from datetime import date
 
 # Page configuration
 st.set_page_config(
@@ -195,9 +196,9 @@ def main():
     if not df.empty:
         with st.sidebar:
             st.subheader("🔍 Filters")
-
-            min_date = st.date_input("From date", value=None)
-            max_date = st.date_input("To date", value=None)
+            today = date.today()
+            min_date = st.date_input("From date", value=today)
+            max_date = st.date_input("To date", value=today)
 
             sources = ["All sources"] + sorted(df["source"].unique().tolist())
             selected_source = st.selectbox("Filter by source", sources, index=0)
