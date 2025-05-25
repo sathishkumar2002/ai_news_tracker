@@ -171,20 +171,16 @@ def render_sidebar_extras():
 
 
 def main():
-    # Centered Image Header
     image_path = "assets/AINEWSTRACKER_IMAGE.png"
     if os.path.exists(image_path):
-        st.markdown(
-            f'''
-            <div style="text-align: center;">
-                <img src="{image_path}" width="400" style="max-width: 100%; height: auto;" />
-                <div style="margin-top: 0.5rem; font-size: 1rem; color: var(--secondary);">
-                    Latest artificial intelligence news
-                </div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.image(image_path, width=400)
+            st.markdown(
+                '<div style="text-align: center; color: var(--secondary); font-size: 1rem; margin-top: 0.3rem;">'
+                'Latest artificial intelligence news</div>',
+                unsafe_allow_html=True
+            )
     else:
         st.markdown(
             '<h1 style="text-align: center;">AI NEWS TRACKER</h1>'
