@@ -1,6 +1,10 @@
 rapidfuzz
 streamlit
 requests
+pytz
+webbrowser
+streamlit.components.v1
 python-dotenv
+Pillow
 pandas
 
