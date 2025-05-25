@@ -80,7 +80,7 @@ st.markdown("""
             align-items: center;
             gap: 8px;
         }
-
+            
         .sidebar-link {
             display: block;
             padding: 0.5rem 0;
@@ -177,19 +177,15 @@ def render_sidebar_extras():
 
 def main():
     # Header with centered image
-    image_path = os.path.join(Path(__file__).parent, "assets", "AINEWSTRACKER_IMAGE.png")
-    
+    image_path = "assets/AINEWSTRACKER_IMAGE.png"
+
     if os.path.exists(image_path):
-        st.markdown("""
-            <div class="title-image-container">
-                <img src="app/assets/AINEWSTRACKER_IMAGE.png" class="title-image">
-            </div>
-        """, unsafe_allow_html=True)
+        st.image(image_path, use_column_width=True)
         st.caption("Latest artificial intelligence news")
     else:
-        # Fallback if image not found
         st.title("AI NEWS TRACKER")
         st.caption("Latest artificial intelligence news")
+
 
     # Load data
     df = load_data()
