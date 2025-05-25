@@ -12,7 +12,7 @@ st.set_page_config(
     page_icon="🧠"
 )
 
-# Global CSS styling
+# Global CSS styling with added center alignment for main content
 st.markdown("""
     <style>
         :root {
@@ -33,10 +33,19 @@ st.markdown("""
             --accent: #f39c12;
         }
 
+        /* Center main content */
+        .main-content {
+            text-align: center;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .article-container {
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid #e0e0e0;
+            text-align: center; /* center article text */
         }
 
         .article-image {
@@ -44,6 +53,9 @@ st.markdown("""
             margin-bottom: 15px;
             max-height: 400px;
             object-fit: contain;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .source-time {
@@ -162,13 +174,24 @@ def main():
     # Centered Image Header
     image_path = "assets/AINEWSTRACKER_IMAGE.png"
     if os.path.exists(image_path):
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.image(image_path, width=400)
-            st.caption("Latest artificial intelligence news")
+        st.markdown(
+            f'''
+            <div style="text-align: center;">
+                <img src="{image_path}" width="400" style="max-width: 100%; height: auto;" />
+                <div style="margin-top: 0.5rem; font-size: 1rem; color: var(--secondary);">
+                    Latest artificial intelligence news
+                </div>
+            </div>
+            ''',
+            unsafe_allow_html=True
+        )
     else:
-        st.title("AI NEWS TRACKER")
-        st.caption("Latest artificial intelligence news")
+        st.markdown(
+            '<h1 style="text-align: center;">AI NEWS TRACKER</h1>'
+            '<div style="text-align: center; color: var(--secondary); font-size: 1rem;">'
+            'Latest artificial intelligence news</div>',
+            unsafe_allow_html=True
+        )
 
     # Load data
     df = load_data()
@@ -202,25 +225,35 @@ def main():
 
         filtered_df = filtered_df.sort_values(by="publishedAt", ascending=False)
 
-        st.markdown(f"**Showing {len(filtered_df)} news articles**")
+        #st.markdown(f"**Showing {len(filtered_df)} news articles**")
         st.markdown("---")
 
         for _, row in filtered_df.iterrows():
             with st.container():
                 if pd.notna(row.get("image")) and str(row["image"]).startswith('http'):
-                    st.image(row["image"], width=600)
+                    st.markdown(
+                        f'<div style="text-align: center;">'
+                        f'<img src="{row["image"]}" width="600" style="max-width: 100%; height: auto; border-radius: 8px;" />'
+                        f'</div>', unsafe_allow_html=True
+    )
 
-                st.markdown(f"### [{row['title']}]({row['url']})")
+                st.markdown(f'<h3 style="text-align: center;">'
+                            f'<a href="{row["url"]}" target="_blank" style="color:inherit; text-decoration:none;">'
+                            f'{row["title"]}</a></h3>', unsafe_allow_html=True)
+
                 st.markdown(
-                    f"<div class='source-time'>📰 {row['source']} • 🕒 {row['publishedAt'].strftime('%b %d, %Y')}</div>",
-                    unsafe_allow_html=True
+                    f'<div style="text-align: center; color: var(--secondary); font-size: 0.9em;">'
+                    f'📰 {row["source"]} • 🕒 {row["publishedAt"].strftime("%b %d, %Y")}'
+                    f'</div>', unsafe_allow_html=True
                 )
 
                 description = row.get("description", "")
                 if pd.notna(description) and description.strip():
-                    st.markdown(f"<div class='article-description'>{description}</div>", unsafe_allow_html=True)
+                    st.markdown(f'<p style="text-align: center; margin-top: 10px; line-height: 1.5;">'
+                                f'{description}</p>', unsafe_allow_html=True)
 
                 st.markdown("---")
+
     else:
         st.warning("No news articles found")
 
