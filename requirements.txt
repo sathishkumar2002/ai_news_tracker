@@ -1,10 +1,8 @@
 rapidfuzz
-streamlit
-requests
+streamlit>=1.30.0
+pandas>=1.5.0
 pytz
-webbrowser
-streamlit.components.v1
-python-dotenv
+requests
 Pillow
-pandas
-
+pygments==2.19.1
+rich==14.0.0
