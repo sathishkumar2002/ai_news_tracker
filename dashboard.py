@@ -180,7 +180,7 @@ def main():
     image_path = "assets/AINEWSTRACKER_IMAGE.png"
 
     if os.path.exists(image_path):
-        st.image(image_path, use_column_width=True)
+        st.image(image_path, width=400)  # Adjust width as needed (try 350–500 range)
         st.caption("Latest artificial intelligence news")
     else:
         st.title("AI NEWS TRACKER")
