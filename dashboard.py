@@ -175,7 +175,7 @@ def main():
     if os.path.exists(image_path):
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.image(image_path, width=400)
+            st.image(image_path, width=600)
             st.markdown(
                 '<div style="text-align: center; color: var(--secondary); font-size: 1rem; margin-top: 0.3rem;">'
                 'Latest artificial intelligence news</div>',
