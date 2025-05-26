@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime,date,timedelta 
 import pytz
 import webbrowser
 import os
-from datetime import date
+
 
 # Page configuration
 st.set_page_config(
@@ -197,7 +197,8 @@ def main():
         with st.sidebar:
             st.subheader("🔍 Filters")
             today = date.today()
-            min_date = st.date_input("From date", value=today)
+            two_days_ago = today - timedelta(days=2)
+            min_date = st.date_input("From date", value=two_days_ago)
             max_date = st.date_input("To date", value=today)
 
             sources = ["All sources"] + sorted(df["source"].unique().tolist())
