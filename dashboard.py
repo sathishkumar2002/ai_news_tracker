@@ -114,7 +114,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def load_data():
     try:
         df = pd.read_csv("data/news_data.csv")
